@@ -12,14 +12,17 @@ import { FaSearch, FaStar, FaUser } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useDebounce } from "../hooks/useDebounce";
 import { posterUrl, searchMovies, POSTER_SIZES } from "../lib/tmdb";
+import { isPosterLoaded, markPosterLoaded } from "../lib/imageCache";
 import { movieLocationState } from "../lib/movieNav";
 import ThemeToggle from "./ThemeToggle";
 
 function SuggestPoster({ src, title }) {
   const [failed, setFailed] = useState(false);
+  const [ready, setReady] = useState(() => isPosterLoaded(src));
 
   useEffect(() => {
     setFailed(false);
+    setReady(isPosterLoaded(src));
   }, [src]);
 
   if (!src || failed) {
@@ -36,15 +39,26 @@ function SuggestPoster({ src, title }) {
   }
 
   return (
-    <img
-      src={src}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      referrerPolicy="no-referrer"
-      onError={() => setFailed(true)}
-      className="w-9 h-12 object-cover rounded-md shrink-0 bg-zinc-800"
-    />
+    <span className="relative w-9 h-12 shrink-0 rounded-md overflow-hidden bg-zinc-800">
+      {!ready ? (
+        <span className="absolute inset-0 skeleton-shimmer" aria-hidden="true" />
+      ) : null}
+      <img
+        src={src}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+        onLoad={() => {
+          markPosterLoaded(src);
+          setReady(true);
+        }}
+        className={`w-9 h-12 object-cover rounded-md relative z-[1] transition-opacity duration-300 ${
+          ready ? "opacity-100" : "opacity-0"
+        }`}
+      />
+    </span>
   );
 }
 

@@ -8,6 +8,7 @@ import { gridVariants } from "../components/motionVariants";
 import { useMovieOverlay } from "../context/MovieOverlayContext";
 import { useInfiniteMovies } from "../hooks/useInfiniteMovies";
 import { fetchMovieGenres } from "../lib/tmdb";
+import { prefetchMoviePosters } from "../lib/imageCache";
 
 export default function Home() {
   const overlay = useMovieOverlay();
@@ -22,6 +23,10 @@ export default function Home() {
 
   const { movies, loading, loadingMore, error, hasMore, loadMore } =
     useInfiniteMovies({ query, genre, year, minRating });
+
+  useEffect(() => {
+    prefetchMoviePosters(movies);
+  }, [movies]);
 
   useEffect(() => {
     fetchMovieGenres()
@@ -100,7 +105,7 @@ export default function Home() {
                 <MovieCard
                   key={`${movie.id}-${movie.release_date || ""}`}
                   movie={movie}
-                  priority={index < 8}
+                  priority={index < 4}
                 />
               ))}
             </motion.div>

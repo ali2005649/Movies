@@ -11,6 +11,7 @@ export default function MovieCard({ movie, priority = false }) {
   const location = useLocation();
   const image = posterUrl(movie.poster_path, POSTER_SIZES.card);
   const srcSet = posterSrcSet(movie.poster_path);
+  const placeholder = posterUrl(movie.poster_path, POSTER_SIZES.lqip);
   const { imgRef, activate, deactivate, warm } = usePosterAura();
 
   const lightUp = (node) => {
@@ -20,7 +21,7 @@ export default function MovieCard({ movie, priority = false }) {
   return (
     <motion.div
       variants={cardVariants}
-      className="h-full"
+      className="movie-card h-full"
       onPointerEnter={(e) => lightUp(e.currentTarget)}
       onPointerLeave={deactivate}
     >
@@ -37,6 +38,7 @@ export default function MovieCard({ movie, priority = false }) {
             src={image}
             srcSet={srcSet}
             sizes={CARD_POSTER_SIZES}
+            placeholderSrc={placeholder}
             alt={movie.title}
             title={movie.title}
             imgRef={imgRef}

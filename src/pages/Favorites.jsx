@@ -7,6 +7,7 @@ import MovieCard from "../components/MovieCard";
 import { MovieGridSkeleton } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
 import { useMovieOverlay } from "../context/MovieOverlayContext";
+import { prefetchMoviePosters } from "../lib/imageCache";
 import { supabase } from "../lib/supabase";
 
 const gridVariants = {
@@ -39,6 +40,11 @@ export default function Favorites() {
         setFavorites([]);
       } else {
         setFavorites(data || []);
+        prefetchMoviePosters(
+          (data || []).map((fav) => ({
+            poster_path: fav.movie_poster,
+          }))
+        );
       }
       setLoading(false);
     };
@@ -100,7 +106,7 @@ export default function Favorites() {
                   poster_path: fav.movie_poster,
                   vote_average: fav.vote_average,
                 }}
-                priority={index < 8}
+                priority={index < 4}
               />
             ))}
           </motion.div>

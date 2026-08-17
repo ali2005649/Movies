@@ -5,6 +5,7 @@ export const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 const IMAGE_CDN = "https://image.tmdb.org/t/p";
 
 export const POSTER_SIZES = {
+  lqip: "w92",
   thumb: "w154",
   card: "w342",
   detail: "w500",
@@ -12,7 +13,7 @@ export const POSTER_SIZES = {
 };
 
 export const CARD_POSTER_SIZES =
-  "(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw";
+  "(max-width: 480px) 46vw, (max-width: 768px) 46vw, (max-width: 1024px) 30vw, (max-width: 1280px) 22vw, 18vw";
 
 async function tmdbFetch(path, params = {}) {
   const url = new URL(`${BASE_URL}${path}`);
@@ -78,7 +79,7 @@ export function posterUrl(path, size = POSTER_SIZES.detail) {
   return `${IMAGE_CDN}/${size}${normalized}`;
 }
 
-export function posterSrcSet(path, widths = [342, 500]) {
+export function posterSrcSet(path, widths = [185, 342, 500]) {
   if (path == null) return undefined;
   const value = String(path).trim();
   if (!value || /^https?:\/\//i.test(value)) return undefined;

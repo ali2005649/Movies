@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { isPosterLoaded, markPosterLoaded } from "../lib/imageCache";
 import { posterLayoutId } from "../lib/movieNav";
 import { posterSpring } from "./motionVariants";
 
@@ -24,6 +25,7 @@ export default function SharedPoster({
   src,
   srcSet,
   sizes,
+  placeholderSrc,
   alt,
   title,
   className = "",
@@ -35,10 +37,12 @@ export default function SharedPoster({
   height,
 }) {
   const [failed, setFailed] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(() => isPosterLoaded(src));
+  const [lqipReady, setLqipReady] = useState(false);
   const localRef = useRef(null);
   const label = alt || title || "Movie poster";
   const showImage = Boolean(src) && !failed;
+  const showLqip = Boolean(placeholderSrc) && !ready && !failed;
 
   const assignRef = (node) => {
     localRef.current = node;
@@ -47,8 +51,14 @@ export default function SharedPoster({
 
   useLayoutEffect(() => {
     setFailed(false);
+    setLqipReady(false);
+    if (isPosterLoaded(src)) {
+      setReady(true);
+      return;
+    }
     const img = localRef.current;
     if (img?.complete && img.naturalWidth > 1) {
+      markPosterLoaded(src);
       setReady(true);
       return;
     }
@@ -66,6 +76,7 @@ export default function SharedPoster({
       markFailed();
       return;
     }
+    markPosterLoaded(src);
     setReady(true);
     onLoad?.(e);
   };
@@ -80,6 +91,19 @@ export default function SharedPoster({
       {showImage ? (
         <>
           <span className="shared-poster__skeleton skeleton-shimmer" aria-hidden="true" />
+          {showLqip ? (
+            <img
+              src={placeholderSrc}
+              alt=""
+              aria-hidden="true"
+              loading={loading}
+              decoding="async"
+              referrerPolicy="no-referrer"
+              draggable={false}
+              onLoad={() => setLqipReady(true)}
+              className={`shared-poster__lqip ${lqipReady ? "is-ready" : ""}`}
+            />
+          ) : null}
           <img
             ref={assignRef}
             src={src}

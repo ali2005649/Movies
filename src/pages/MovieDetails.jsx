@@ -188,6 +188,7 @@ const MovieDetails = forwardRef(function MovieDetails({ overlayId } = {}, ref) {
   const trailerKey = getTrailerKey(movie);
   const image = posterUrl(movie.poster_path, POSTER_SIZES.detail);
   const largeImage = posterUrl(movie.poster_path, POSTER_SIZES.large);
+  const placeholder = posterUrl(movie.poster_path, POSTER_SIZES.lqip);
   const detailsReady = Boolean(movie.overview || movie.genres);
 
   const body = (
@@ -220,6 +221,7 @@ const MovieDetails = forwardRef(function MovieDetails({ overlayId } = {}, ref) {
                 src={image}
                 alt={movie.title}
                 title={movie.title}
+                placeholderSrc={placeholder}
                 imgRef={imgRef}
                 loading="eager"
                 fetchPriority="high"

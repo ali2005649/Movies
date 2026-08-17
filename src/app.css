@@ -182,10 +182,28 @@
     pointer-events: none;
   }
 
-  .shared-poster__img {
+  .shared-poster__lqip {
     position: absolute;
     inset: 0;
     z-index: 2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    filter: blur(14px);
+    transform: scale(1.12);
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .shared-poster__lqip.is-ready {
+    opacity: 1;
+  }
+
+  .shared-poster__img {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
     display: block;
     width: 100%;
     height: 100%;
@@ -199,9 +217,10 @@
       transform 0.55s ease;
   }
 
-  .shared-poster.is-loaded .shared-poster__skeleton {
+  .shared-poster.is-loaded .shared-poster__skeleton,
+  .shared-poster.is-loaded .shared-poster__lqip {
     opacity: 0;
-    transition: opacity 0.35s ease;
+    transition: opacity 0.3s ease;
   }
 
   .shared-poster .poster-fallback {
@@ -218,8 +237,31 @@
     transform: none;
   }
 
-  @media (prefers-reduced-motion: reduce) {
+  .movie-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 22rem;
+  }
+
+  @media (max-width: 768px) {
     .shared-poster__img {
+      filter: none;
+      transform: none;
+      transition: opacity 0.28s ease-out;
+    }
+
+    .shared-poster__lqip {
+      filter: blur(10px);
+      transform: scale(1.08);
+    }
+
+    .movie-card {
+      contain-intrinsic-size: auto 18rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shared-poster__img,
+    .shared-poster__lqip {
       filter: none;
       transform: none;
       transition: opacity 0.2s ease;
