@@ -402,12 +402,20 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Link
-                to="/login"
-                className="ml-1 inline-flex items-center bg-primary hover:brightness-110 text-slate-900 font-bold text-sm px-5 py-2 rounded-full transition-[filter] duration-200 shadow-sm shadow-primary/20"
-              >
-                Login
-              </Link>
+              <>
+                <Link
+                  to="/signup"
+                  className="text-sm font-semibold text-text-muted hover:text-primary px-2.5 py-1.5"
+                >
+                  Sign up
+                </Link>
+                <Link
+                  to="/login"
+                  className="ml-1 inline-flex items-center bg-primary hover:brightness-110 text-slate-900 font-bold text-sm px-5 py-2 rounded-full transition-[filter] duration-200 shadow-sm shadow-primary/20"
+                >
+                  Login
+                </Link>
+              </>
             )}
           </div>
 
