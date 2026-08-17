@@ -9,31 +9,94 @@ import { supabase } from "../lib/supabase";
 const fieldClass =
   "w-full bg-background text-text-main pl-10 pr-4 py-3 rounded-xl border border-text-muted/20 focus:outline-none focus:ring-2 focus:ring-primary transition-all";
 
-export default function Login() {
+export default function Login({ defaultMode = "login" }) {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const from = location.state?.from || "/";
 
+  const [mode, setMode] = useState(defaultMode);
+  const isSignup = mode === "signup";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
 
   if (!authLoading && isAuthenticated) {
     return <Navigate to={from} replace />;
   }
 
-  const handleLogin = async (e) => {
+  const switchMode = (next) => {
+    setMode(next);
+    setError("");
+    setInfo("");
+    setConfirmPassword("");
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     setError("");
-    setLoading(true);
+    setInfo("");
 
     const trimmedEmail = email.trim();
 
+    if (isSignup) {
+      if (password !== confirmPassword) {
+        const message = "Passwords do not match.";
+        setError(message);
+        toast.error(message);
+        return;
+      }
+      if (password.length < 6) {
+        const message = "Password must be at least 6 characters.";
+        setError(message);
+        toast.error(message);
+        return;
+      }
+    }
+
+    setLoading(true);
+
     try {
+      if (isSignup) {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: trimmedEmail,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: { email: trimmedEmail },
+          },
+        });
+
+        if (signUpError) throw signUpError;
+
+        const alreadyRegistered =
+          data.user?.identities && data.user.identities.length === 0;
+        if (alreadyRegistered) {
+          throw new Error("An account with this email already exists. Please sign in.");
+        }
+
+        if (data.session?.user) {
+          toast.success("Account created. Welcome!");
+          navigate(from, { replace: true });
+          return;
+        }
+
+        const message =
+          "Account created. Check your inbox to confirm your email, then sign in.";
+        setMode("login");
+        setConfirmPassword("");
+        setError("");
+        setInfo(message);
+        toast.success(message);
+        return;
+      }
+
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
         password,
@@ -50,7 +113,7 @@ export default function Login() {
       const message =
         err?.message === "Invalid login credentials"
           ? "Invalid email or password."
-          : err?.message || "Login failed";
+          : err?.message || (isSignup ? "Sign up failed" : "Login failed");
       setError(message);
       toast.error(message);
     } finally {
@@ -73,18 +136,56 @@ export default function Login() {
           <FaArrowLeft /> Back to home
         </Link>
 
-        <h1 className="text-3xl font-bold text-text-main mb-2">Sign in</h1>
-        <p className="text-text-muted mb-8">
-          Enter your email and password to continue.
+        <h1 className="text-3xl font-bold text-text-main mb-2">
+          {isSignup ? "Create account" : "Sign in"}
+        </h1>
+        <p className="text-text-muted mb-6">
+          {isSignup
+            ? "Enter your email and a password to register."
+            : "Enter your email and password to continue."}
         </p>
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+        <div className="mb-6 grid grid-cols-2 rounded-xl bg-background p-1 border border-text-muted/15">
+          <button
+            type="button"
+            onClick={() => switchMode("login")}
+            className={`rounded-lg py-2 text-sm font-bold transition-colors ${
+              !isSignup
+                ? "bg-primary text-slate-900"
+                : "text-text-muted hover:text-text-main"
+            }`}
+          >
+            Sign in
+          </button>
+          <button
+            type="button"
+            onClick={() => switchMode("signup")}
+            className={`rounded-lg py-2 text-sm font-bold transition-colors ${
+              isSignup
+                ? "bg-primary text-slate-900"
+                : "text-text-muted hover:text-text-main"
+            }`}
+          >
+            Sign up
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {error ? (
             <p
               role="alert"
               className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400"
             >
               {error}
+            </p>
+          ) : null}
+
+          {info ? (
+            <p
+              role="status"
+              className="rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary"
+            >
+              {info}
             </p>
           ) : null}
 
@@ -107,8 +208,8 @@ export default function Login() {
             <input
               type={showPassword ? "text" : "password"}
               name="password"
-              autoComplete="current-password"
-              placeholder="Password"
+              autoComplete={isSignup ? "new-password" : "current-password"}
+              placeholder={isSignup ? "Password (min. 6 characters)" : "Password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -125,6 +226,23 @@ export default function Login() {
             </button>
           </div>
 
+          {isSignup ? (
+            <div className="relative">
+              <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+              <input
+                type={showPassword ? "text" : "password"}
+                name="confirmPassword"
+                autoComplete="new-password"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+                className={fieldClass}
+              />
+            </div>
+          ) : null}
+
           <motion.button
             type="submit"
             disabled={loading}
@@ -132,16 +250,15 @@ export default function Login() {
             whileTap={{ scale: loading ? 1 : 0.98 }}
             className="w-full bg-primary hover:brightness-110 text-slate-900 font-bold py-3 rounded-xl transition-all disabled:opacity-50"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading
+              ? isSignup
+                ? "Creating account..."
+                : "Signing in..."
+              : isSignup
+                ? "Sign up"
+                : "Sign in"}
           </motion.button>
         </form>
-
-        <p className="mt-6 text-center text-sm text-text-muted">
-          Don&apos;t have an account?{" "}
-          <Link to="/signup" className="font-semibold text-primary hover:underline">
-            Sign up
-          </Link>
-        </p>
       </motion.div>
     </div>
   );
