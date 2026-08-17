@@ -1,8 +1,27 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
 import { useCursor } from "../context/CursorContext";
+
+const YOUTUBE_ALLOW =
+  "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen";
+
+function youtubeEmbedSrc(videoId) {
+  if (!videoId || typeof window === "undefined") return "";
+
+  const params = new URLSearchParams({
+    autoplay: "1",
+    rel: "0",
+    enablejsapi: "1",
+    modestbranding: "1",
+    playsinline: "1",
+    origin: window.location.origin,
+    widget_referrer: window.location.origin,
+  });
+
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
 
 export default function TrailerModal({ youtubeKey, title, open, onClose }) {
   const { suppress, reset } = useCursor();
@@ -42,6 +61,11 @@ export default function TrailerModal({ youtubeKey, title, open, onClose }) {
     };
   }, [open, onClose]);
 
+  const embedSrc = useMemo(
+    () => (open && youtubeKey ? youtubeEmbedSrc(youtubeKey) : ""),
+    [open, youtubeKey]
+  );
+
   if (typeof document === "undefined") return null;
 
   return createPortal(
@@ -80,10 +104,11 @@ export default function TrailerModal({ youtubeKey, title, open, onClose }) {
               <iframe
                 width="100%"
                 height="100%"
-                src={`https://www.youtube.com/embed/${youtubeKey}?autoplay=1&rel=0`}
+                src={embedSrc}
                 title={`${title} trailer`}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow={YOUTUBE_ALLOW}
                 allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
                 className="h-full w-full cursor-auto"
               />
             </div>
