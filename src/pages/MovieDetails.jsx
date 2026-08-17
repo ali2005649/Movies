@@ -19,7 +19,7 @@ import { MovieDetailsSkeleton } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
 import { usePosterAura } from "../hooks/usePosterAura";
 import { supabase } from "../lib/supabase";
-import { fetchMovieDetails, getTrailerKey, posterUrl } from "../lib/tmdb";
+import { fetchMovieDetails, getTrailerKey, posterUrl, POSTER_SIZES } from "../lib/tmdb";
 
 const MovieDetails = forwardRef(function MovieDetails({ overlayId } = {}, ref) {
   const params = useParams();
@@ -101,7 +101,7 @@ const MovieDetails = forwardRef(function MovieDetails({ overlayId } = {}, ref) {
 
   useEffect(() => {
     if (!movie) return undefined;
-    const src = posterUrl(movie.poster_path);
+    const src = posterUrl(movie.poster_path, POSTER_SIZES.detail);
     const img = imgRef.current;
     if (img?.complete && img.naturalWidth) {
       warm(src, movie.id);
@@ -186,8 +186,8 @@ const MovieDetails = forwardRef(function MovieDetails({ overlayId } = {}, ref) {
   }
 
   const trailerKey = getTrailerKey(movie);
-  const image = posterUrl(movie.poster_path);
-  const largeImage = posterUrl(movie.poster_path, "w780");
+  const image = posterUrl(movie.poster_path, POSTER_SIZES.detail);
+  const largeImage = posterUrl(movie.poster_path, POSTER_SIZES.large);
   const detailsReady = Boolean(movie.overview || movie.genres);
 
   const body = (
@@ -214,19 +214,24 @@ const MovieDetails = forwardRef(function MovieDetails({ overlayId } = {}, ref) {
 
         <div className="movie-hero-stage">
           <div className="movie-hero-poster">
-            {image ? (
-              <div className="group relative">
-                <SharedPoster
-                  id={movie.id}
-                  src={image}
-                  alt={movie.title}
-                  imgRef={imgRef}
-                  className="w-full aspect-[2/3] object-cover shadow-2xl"
-                  onLoad={(e) => {
-                    warm(image, movie.id);
-                    activate(movie.id, image, e.currentTarget);
-                  }}
-                />
+            <div className="group relative">
+              <SharedPoster
+                id={movie.id}
+                src={image}
+                alt={movie.title}
+                title={movie.title}
+                imgRef={imgRef}
+                loading="eager"
+                fetchPriority="high"
+                width={500}
+                height={750}
+                className="w-full aspect-[2/3] shadow-2xl"
+                onLoad={(e) => {
+                  warm(image, movie.id);
+                  activate(movie.id, image, e.currentTarget);
+                }}
+              />
+              {image ? (
                 <button
                   type="button"
                   data-cursor="play"
@@ -234,12 +239,8 @@ const MovieDetails = forwardRef(function MovieDetails({ overlayId } = {}, ref) {
                   className="absolute inset-0 rounded-[16px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label={`Enlarge ${movie.title} poster`}
                 />
-              </div>
-            ) : (
-              <div className="w-full aspect-[2/3] rounded-xl bg-surface flex items-center justify-center text-text-muted border border-text-muted/20">
-                No Image
-              </div>
-            )}
+              ) : null}
+            </div>
           </div>
 
           <motion.div

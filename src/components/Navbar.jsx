@@ -11,9 +11,42 @@ import toast from "react-hot-toast";
 import { FaSearch, FaStar, FaUser } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useDebounce } from "../hooks/useDebounce";
-import { posterUrl, searchMovies } from "../lib/tmdb";
+import { posterUrl, searchMovies, POSTER_SIZES } from "../lib/tmdb";
 import { movieLocationState } from "../lib/movieNav";
 import ThemeToggle from "./ThemeToggle";
+
+function SuggestPoster({ src, title }) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  if (!src || failed) {
+    return (
+      <div
+        className="w-9 h-12 rounded-md shrink-0 bg-gradient-to-br from-zinc-700 to-black border border-primary/20 flex items-center justify-center px-0.5 text-center"
+        aria-hidden="true"
+      >
+        <span className="text-[8px] leading-tight font-editorial italic text-text-main/80 line-clamp-3">
+          {title || "—"}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onError={() => setFailed(true)}
+      className="w-9 h-12 object-cover rounded-md shrink-0 bg-zinc-800"
+    />
+  );
+}
 
 function formatEmailLabel(email = "") {
   const [local] = email.split("@");
@@ -274,7 +307,7 @@ export default function Navbar() {
                     </li>
                   ) : (
                     suggestions.map((movie, index) => {
-                      const image = posterUrl(movie.poster_path);
+                      const image = posterUrl(movie.poster_path, POSTER_SIZES.thumb);
                       const active = index === activeIndex;
                       return (
                         <li
@@ -306,15 +339,7 @@ export default function Navbar() {
                               active ? "is-active bg-primary/25" : "bg-transparent",
                             ].join(" ")}
                           >
-                            {image ? (
-                              <img
-                                src={image}
-                                alt=""
-                                className="w-9 h-12 object-cover rounded-md shrink-0 bg-background"
-                              />
-                            ) : (
-                              <div className="w-9 h-12 rounded-md bg-background shrink-0" />
-                            )}
+                            <SuggestPoster src={image} title={movie.title} />
                             <div className="min-w-0 flex-1">
                               <p className="font-semibold text-sm text-text-main truncate">
                                 {movie.title}

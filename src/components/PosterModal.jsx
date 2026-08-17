@@ -1,9 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
+import { PosterPlaceholder } from "./SharedPoster";
 
 export default function PosterModal({ src, title, open, onClose }) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (open) setFailed(false);
+  }, [open, src]);
+
   useEffect(() => {
     if (!open) return undefined;
 
@@ -44,16 +51,27 @@ export default function PosterModal({ src, title, open, onClose }) {
             <FaTimes className="text-lg" />
           </button>
 
-          <motion.img
-            src={src}
-            alt={`${title} poster`}
-            initial={{ scale: 0.92, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.96, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 280, damping: 24 }}
-            onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] max-w-[min(100%,28rem)] sm:max-w-[min(100%,36rem)] w-auto rounded-xl shadow-2xl object-contain border border-white/10"
-          />
+          {failed ? (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-[min(100%,18rem)]"
+            >
+              <PosterPlaceholder title={title} />
+            </div>
+          ) : (
+            <motion.img
+              src={src}
+              alt={`${title} poster`}
+              referrerPolicy="no-referrer"
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 280, damping: 24 }}
+              onClick={(e) => e.stopPropagation()}
+              onError={() => setFailed(true)}
+              className="max-h-[90vh] max-w-[min(100%,28rem)] sm:max-w-[min(100%,36rem)] w-auto rounded-xl shadow-2xl object-contain border border-white/10"
+            />
+          )}
         </motion.div>
       )}
     </AnimatePresence>,

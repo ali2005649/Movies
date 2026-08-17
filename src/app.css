@@ -170,6 +170,114 @@
     position: relative;
     z-index: 40;
     display: block;
+    overflow: hidden;
+    background: rgb(18 18 22);
+  }
+
+  .shared-poster__skeleton {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .shared-poster__img {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    filter: blur(18px);
+    transform: scale(1.06);
+    transition:
+      opacity 0.45s ease,
+      filter 0.55s ease,
+      transform 0.55s ease;
+  }
+
+  .shared-poster.is-loaded .shared-poster__skeleton {
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+
+  .shared-poster .poster-fallback {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .shared-poster__img.is-ready {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shared-poster__img {
+      filter: none;
+      transform: none;
+      transition: opacity 0.2s ease;
+    }
+  }
+
+  .poster-fallback {
+    position: relative;
+    display: flex;
+    aspect-ratio: 2 / 3;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 16px;
+    background:
+      linear-gradient(165deg, rgb(38 36 42) 0%, rgb(12 12 16) 48%, rgb(6 6 8) 100%);
+    border: 1px solid rgb(201 162 39 / 0.16);
+  }
+
+  .poster-fallback__glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 18%, rgb(201 162 39 / 0.22), transparent 58%);
+    pointer-events: none;
+  }
+
+  .poster-fallback__copy {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 1.1rem 0.9rem;
+    text-align: center;
+  }
+
+  .poster-fallback__title {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(0.95rem, 2.4vw, 1.25rem);
+    font-weight: 600;
+    font-style: italic;
+    line-height: 1.2;
+    color: rgb(244 239 230 / 0.92);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .poster-fallback__hint {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgb(201 162 39 / 0.72);
   }
 
   .movie-hero {

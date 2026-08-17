@@ -2,6 +2,17 @@ const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
 
 export const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+const IMAGE_CDN = "https://image.tmdb.org/t/p";
+
+export const POSTER_SIZES = {
+  thumb: "w154",
+  card: "w342",
+  detail: "w500",
+  large: "w780",
+};
+
+export const CARD_POSTER_SIZES =
+  "(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw";
 
 async function tmdbFetch(path, params = {}) {
   const url = new URL(`${BASE_URL}${path}`);
@@ -55,8 +66,26 @@ export function getTrailerKey(movie) {
   return trailer?.key || null;
 }
 
-export function posterUrl(path, size = "w500") {
-  return path ? `https://image.tmdb.org/t/p/${size}${path}` : null;
+export function posterUrl(path, size = POSTER_SIZES.detail) {
+  if (path == null) return null;
+
+  const value = String(path).trim();
+  if (!value || value === "null" || value === "undefined") return null;
+
+  if (/^https?:\/\//i.test(value)) return value;
+
+  const normalized = value.startsWith("/") ? value : `/${value}`;
+  return `${IMAGE_CDN}/${size}${normalized}`;
+}
+
+export function posterSrcSet(path, widths = [342, 500]) {
+  if (path == null) return undefined;
+  const value = String(path).trim();
+  if (!value || /^https?:\/\//i.test(value)) return undefined;
+
+  return widths
+    .map((width) => `${posterUrl(path, `w${width}`)} ${width}w`)
+    .join(", ");
 }
 
 export function filterMoviesClient(movies, { genre, year, minRating } = {}) {

@@ -4,12 +4,13 @@ import { FaStar } from "react-icons/fa";
 import SharedPoster from "./SharedPoster";
 import { usePosterAura } from "../hooks/usePosterAura";
 import { movieLocationState } from "../lib/movieNav";
-import { posterUrl } from "../lib/tmdb";
+import { posterUrl, posterSrcSet, CARD_POSTER_SIZES, POSTER_SIZES } from "../lib/tmdb";
 import { cardVariants } from "./motionVariants";
 
-export default function MovieCard({ movie }) {
+export default function MovieCard({ movie, priority = false }) {
   const location = useLocation();
-  const image = posterUrl(movie.poster_path);
+  const image = posterUrl(movie.poster_path, POSTER_SIZES.card);
+  const srcSet = posterSrcSet(movie.poster_path);
   const { imgRef, activate, deactivate, warm } = usePosterAura();
 
   const lightUp = (node) => {
@@ -34,9 +35,16 @@ export default function MovieCard({ movie }) {
           <SharedPoster
             id={movie.id}
             src={image}
+            srcSet={srcSet}
+            sizes={CARD_POSTER_SIZES}
             alt={movie.title}
+            title={movie.title}
             imgRef={imgRef}
-            className="w-full aspect-[2/3] object-cover pointer-events-none"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "low"}
+            width={342}
+            height={513}
+            className="w-full aspect-[2/3] pointer-events-none"
             onLoad={() => warm(image, movie.id)}
           />
         </div>

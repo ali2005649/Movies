@@ -130,6 +130,7 @@ export function samplePosterSrc(src) {
   const request = new Promise((resolve) => {
     const probe = new Image();
     probe.crossOrigin = "anonymous";
+    probe.referrerPolicy = "no-referrer";
     probe.decoding = "async";
     probe.onload = () => {
       const palette = extractPosterPalette(probe);

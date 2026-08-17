@@ -91,7 +91,7 @@ export default function Favorites() {
             animate="show"
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
           >
-            {favorites.map((fav) => (
+            {favorites.map((fav, index) => (
               <MovieCard
                 key={fav.id}
                 movie={{
@@ -100,6 +100,7 @@ export default function Favorites() {
                   poster_path: fav.movie_poster,
                   vote_average: fav.vote_average,
                 }}
+                priority={index < 8}
               />
             ))}
           </motion.div>
